@@ -2630,8 +2630,20 @@ end
 
 f() = _foldl_iter(step, (Missing[],), [0.0], 1)
 end
-@test Core.Compiler.typesubtract(Tuple{Union{Int,Char}}, Tuple{Char}, 1) == Tuple{Union{Int,Char}}
+@test Core.Compiler.typesubtract(Tuple{Union{Int,Char}}, Tuple{Char}, 0) == Tuple{Int}
+@test Core.Compiler.typesubtract(Tuple{Union{Int,Char}}, Tuple{Char}, 1) == Tuple{Int}
 @test Core.Compiler.typesubtract(Tuple{Union{Int,Char}}, Tuple{Char}, 2) == Tuple{Int}
+@test Core.Compiler.typesubtract(NTuple{3, Union{Int, Char}}, Tuple{Char, Vararg{Any,2}}, 0) ==
+        Tuple{Int64, Union{Char, Int64}, Union{Char, Int64}}
+@test Core.Compiler.typesubtract(NTuple{3, Union{Int, Char}}, Tuple{Char, Vararg{Any,2}}, 10) ==
+        Union{Tuple{Int64, Char, Char}, Tuple{Int64, Char, Int64}, Tuple{Int64, Int64, Char}, Tuple{Int64, Int64, Int64}}
+@test Core.Compiler.typesubtract(NTuple{3, Union{Int, Char}}, NTuple{3, Char}, 0) ==
+        NTuple{3, Union{Int, Char}}
+@test Core.Compiler.typesubtract(NTuple{3, Union{Int, Char}}, NTuple{3, Char}, 10) ==
+        Union{Tuple{Char, Char, Int64}, Tuple{Char, Int64, Char}, Tuple{Char, Int64, Int64}, Tuple{Int64, Char, Char},
+              Tuple{Int64, Char, Int64}, Tuple{Int64, Int64, Char}, Tuple{Int64, Int64, Int64}}
+
+
 @test Base.return_types(Issue35566.f) == [Val{:expected}]
 
 # constant prop through keyword arguments
